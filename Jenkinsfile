@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Using the IDs we created in Jenkins Credentials
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
-        DOCKER_USER = 'rahulgoud213' 
+        DOCKER_USER = 'rahulgoud21' 
     }
 
     stages {
