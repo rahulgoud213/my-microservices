@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5001:5001"
+    networks:
+      - micro-net
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    networks:
+      - micro-net
+  # ... (all your services are above here)
+
+networks:
+  micro-net:
+    driver: bridge

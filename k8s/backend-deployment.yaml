@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: backend:v3  # Note: You might need to rebuild this locally!
+        ports:
+        - containerPort: 5001  # Question: Which port is the Flask app listening on?
+        imagePullPolicy: IfNotPresent # Important for local testing!
+        # Inside backend-deployment.yaml under 'containers:'
+        resources:
+         requests:
+          cpu: "100m"      # 1/10th of a core
+          memory: "128Mi"
+         limits:
+          cpu: "500m"      # 1/2 a core
+          memory: "256Mi"
+
+        env:
+        - name: DB_HOST
+          value: "postgres-service"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        - name: DB_NAME  # Use this if your app.py looks for a DB name variable
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: dbname
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: FLASK_DEBUG
+          value: "1"

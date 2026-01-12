@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: backend
+  # Inside your backend-service.yaml
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001
+      nodePort: 31001  # Changed from 35001 to fit the 30000-32767 range
+  type: LoadBalancer

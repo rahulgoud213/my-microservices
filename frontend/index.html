@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registry Microservice</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-6 text-slate-200">
+    <div id="root" class="w-full max-w-md"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function App() {
+            const [users, setUsers] = useState([]);
+            const [firstName, setFirstName] = useState('');
+            const [lastName, setLastName] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            // 1. Fetch the user list from our Backend API
+            const fetchUsers = async () => {
+                try {
+                    const response = await fetch('http://localhost:5001/api/users');
+                    const data = await response.json();
+                    setUsers(data);
+                } catch (error) {
+                    console.error("Error fetching users:", error);
+                }
+            };
+
+            // Load users on initial page mount
+            useEffect(() => {
+                fetchUsers();
+            }, []);
+
+            // 2. Handle the Form Submission
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!firstName || !lastName) return;
+
+                setLoading(true);
+                try {
+                    const response = await fetch('http://localhost:5001/api/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ firstName, lastName }),
+                    });
+
+                    if (response.ok) {
+                        setFirstName('');
+                        setLastName('');
+                        await fetchUsers(); // ⚡ Trigger the Live Update
+                    }
+                } catch (error) {
+                    console.error("Registration failed:", error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div class="bg-slate-800 rounded-3xl shadow-2xl border border-slate-700 p-8 space-y-8">
+                    <header class="text-center">
+                        <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                            Cloud Registry
+                        </h1>
+                        <p class="text-slate-400 text-sm mt-2">Microservices Demo v2.0</p>
+                    </header>
+
+                    {/* Registration Form */}
+                    <form onSubmit={handleSubmit} class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">First Name</label>
+                            <input 
+                                type="text" 
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                placeholder="Enter first name"
+                            />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Last Name</label>
+                            <input 
+                                type="text" 
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                placeholder="Enter last name"
+                            />
+                        </div>
+                        <button 
+                            type="submit"
+                            disabled={loading}
+                            class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-3 rounded-xl shadow-lg transform active:scale-95 transition-all disabled:opacity-50"
+                        >
+                            {loading ? 'Processing...' : 'Register User'}
+                        </button>
+                    </form>
+
+                    {/* Dynamic User List */}
+                    <div class="pt-6 border-t border-slate-700">
+                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                            Recent Registrations
+                        </h2>
+                        <div class="max-h-48 overflow-y-auto pr-2 space-y-3 scrollbar-hide">
+                            {users.length === 0 ? (
+                                <p class="text-slate-500 italic text-center py-4">No users found.</p>
+                            ) : (
+                                users.map(user => (
+                                    <div key={user.id} class="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 flex justify-between items-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                        <span class="font-medium text-slate-200">{user.firstName} {user.lastName}</span>
+                                        <span class="text-[10px] text-slate-500 italic">{user.date}</span>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
