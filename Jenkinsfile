@@ -41,6 +41,7 @@ pipeline {
                         
                         // 🚀 Push to Docker Hub
                         sh "docker push ${DOCKER_USER}/frontend:latest"
+                        sh "sed -i '' 's|http://localhost:5001|http://backend-service:5001|g' index.html"
                     }
                 }
             }
