@@ -47,17 +47,22 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    // ☸️ Updating the cluster with the new images
-                    sh "kubectl apply -f k8s/"
-                    sh "kubectl rollout restart deployment/backend-deployment"
-                    sh "kubectl rollout restart deployment/frontend-deployment"
-                }
+stage('Build & Push Frontend') {
+    steps {
+        dir('frontend') {
+            script {
+                // 🛠️ Build the frontend image
+                sh "docker build -t ${DOCKER_USER}/frontend:latest ."
+                
+                // 🚀 Push to Docker Hub
+                sh "docker push ${DOCKER_USER}/frontend:latest"
+
+                // 🔄 The sed command
+                sh "sed -i '' 's|http://localhost:5001|http://backend-service:5001|g' index.html"
             }
         }
     }
+}
 
     post {
         always {
