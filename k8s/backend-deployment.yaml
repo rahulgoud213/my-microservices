@@ -14,19 +14,19 @@ spec:
     spec:
       containers:
       - name: backend
-        image: backend:v3  # Note: You might need to rebuild this locally!
+        # Make sure this matches the image name you push in Jenkins!
+        image: rahulgoud21/backend:latest 
+        imagePullPolicy: Always
         ports:
-        - containerPort: 5001  # Question: Which port is the Flask app listening on?
-        imagePullPolicy: IfNotPresent # Important for local testing!
-        # Inside backend-deployment.yaml under 'containers:'
+        - containerPort: 5001
         resources:
-         requests:
-          cpu: "100m"      # 1/10th of a core
-          memory: "128Mi"
-         limits:
-          cpu: "500m"      # 1/2 a core
-          memory: "256Mi"
-
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        # The env block must be inside the container list
         env:
         - name: DB_HOST
           value: "postgres-service"
@@ -40,7 +40,7 @@ spec:
             secretKeyRef:
               name: db-credentials
               key: password
-        - name: DB_NAME  # Use this if your app.py looks for a DB name variable
+        - name: DB_NAME
           valueFrom:
             secretKeyRef:
               name: db-credentials
